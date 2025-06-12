@@ -2,8 +2,9 @@ import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
   username: "",
-  password: "",
   photoUrl: "",
+  accessToken: "",
+  refreshToken: "",
 };
 
 const AuthSlice = createSlice({
@@ -12,13 +13,15 @@ const AuthSlice = createSlice({
   reducers: {
     addAuth(state, action) {
       state.username = action.payload.username;
-      state.password = action.payload.password;
       state.photoUrl = action.payload.photoUrl;
+      state.accessToken = action.payload.accessToken;
+      state.refreshToken = action.payload.refreshToken;
     },
     removeAuth(state) {
       state.username = "";
-      state.password = "";
       state.photoUrl = "";
+      state.accessToken = "";
+      state.refreshToken = "";
     },
   },
 });

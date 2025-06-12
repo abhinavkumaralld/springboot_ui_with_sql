@@ -7,6 +7,7 @@ import axios from "axios";
 import TaskUpdateModal from "./TaskUpdateModal";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
+import instance from "../../axios/instance";
 
 const AllTasks = () => {
   const [items, setItems] = useState([]);
@@ -21,18 +22,17 @@ const AllTasks = () => {
   });
   const navigate = useNavigate();
   const authObject = useSelector((state) => state.auth);
-  const [base64Credentials, setBase64Credentials] = useState(
-    btoa(`${authObject.username}:${authObject.password}`)
-  );
+
+  console.log("authobj", authObject);
 
   const fetchData = async () => {
     try {
-      const token = base64Credentials; // base64 encode
-      const response = await axios.get("http://localhost:8080/notes/", {
-        headers: {
-          Authorization: `Basic ${token}`,
-        },
-      });
+      // const response = await axios.get("http://localhost:8080/notes/", {
+      //   headers: {
+      //     Authorization: `Bearer ${authObject.accessToken}`,
+      //   },
+      // });
+      const response = await instance({ url: "notes/", method: "GET" });
       setItems(response?.data);
     } catch (error) {
       console.error("Fetching failed:", error.response?.data || error.message);
@@ -42,19 +42,26 @@ const AllTasks = () => {
   const addTask = async (e) => {
     e.preventDefault();
     try {
-      const token = base64Credentials; // base64 encode
-      const response = await axios.post(
-        "http://localhost:8080/notes/",
-        {
+      // const response = await axios.post(
+      //   "http://localhost:8080/notes/",
+      //   {
+      //     title: newItemObj?.title,
+      //     description: newItemObj?.description,
+      //   },
+      //   {
+      //     headers: {
+      //       Authorization: `Bearer ${authObject.accessToken}`,
+      //     },
+      //   }
+      // );
+      const response = await instance({
+        url: "notes/",
+        method: "POST",
+        data: {
           title: newItemObj?.title,
           description: newItemObj?.description,
         },
-        {
-          headers: {
-            Authorization: `Basic ${token}`,
-          },
-        }
-      );
+      });
       setNewItemObj({
         title: "",
         description: "",
@@ -67,40 +74,47 @@ const AllTasks = () => {
 
   const updateTask = async () => {
     try {
-      const token = base64Credentials; // base64 encode
-      const response = await axios.put(
-        "http://localhost:8080/notes/" + itemObjToUpdate?.id,
-        itemObjToUpdate,
-        {
-          headers: {
-            Authorization: `Basic ${token}`,
-          },
-        }
-      );
+      // const response = await axios.put(
+      //   "http://localhost:8080/notes/" + itemObjToUpdate?.id,
+      //   itemObjToUpdate,
+      //   {
+      //     headers: {
+      //       Authorization: `Bearer ${authObject.accessToken}`,
+      //     },
+      //   }
+      // );
+      const response = await instance({
+        url: "notes/" + itemObjToUpdate?.id,
+        method: "PUT",
+        data: itemObjToUpdate,
+      });
       fetchData();
       setIsModalOpen(false);
     } catch (error) {
-      console.error("add failed:", error.response?.data || error.message);
+      console.error("update failed:", error.response?.data || error.message);
     }
   };
 
   const deleteTask = async (id, objToDelete) => {
     try {
-      const token = base64Credentials; // base64 encode
-      const response = await axios.delete("http://localhost:8080/notes/" + id, {
-        headers: {
-          Authorization: `Basic ${token}`,
-        },
+      // const response = await axios.delete("http://localhost:8080/notes/" + id, {
+      //   headers: {
+      //     Authorization: `Bearer ${authObject.accessToken}`,
+      //   },
+      // });
+      const response = await instance({
+        url: "notes/" + id,
+        method: "DELETE",
       });
       fetchData();
     } catch (error) {
-      console.error("add failed:", error.response?.data || error.message);
+      console.error("delete failed:", error.response?.data || error.message);
     }
   };
 
   useEffect(() => {
-    if (base64Credentials && authObject.username) fetchData();
-  }, [base64Credentials]);
+    if (authObject.accessToken && authObject.username) fetchData();
+  }, [authObject.accessToken]);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   return (

@@ -13,6 +13,7 @@ import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { addAuth, removeAuth } from "../../redux/AuthSlice";
 import axios from "axios";
+import { extractPayload } from "../Utils/jwtUtils";
 const LoginPage = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -32,16 +33,23 @@ const LoginPage = () => {
       const password = formData.password; // Replace with your actual password
 
       const token = btoa(`${username}:${password}`); // base64 encode
-      const response = await axios.get("http://localhost:8080/user/", {
+      const response = await axios.post("http://localhost:8080/auth/login", {
+        username: username,
+        password: password,
+      });
+      const decodedToken = extractPayload(response?.data?.accessToken);
+      console.log("resp", response);
+      const userResponse = await axios.get("http://localhost:8080/user/", {
         headers: {
-          Authorization: `Basic ${token}`,
+          Authorization: `Bearer ${response?.data?.accessToken}`,
         },
       });
       dispatch(
         addAuth({
-          username: response.data?.username,
-          password: password,
-          photoUrl: response.data?.photoUrl,
+          username: decodedToken?.username,
+          photoUrl: userResponse.data?.photoUrl,
+          accessToken: response?.data?.accessToken,
+          refreshToken: response?.data?.refreshToken,
         })
       );
       navigate("/task");
